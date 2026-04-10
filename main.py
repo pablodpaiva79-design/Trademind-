@@ -198,6 +198,56 @@ def analisar():
 # RELATÓRIO
 # ========================
 def relatorio():
+    def gestor_status():
+    conn = conectar()
+    c = conn.cursor()
+
+    hoje = datetime.now().strftime("%Y-%m-%d")
+
+    c.execute("""
+    SELECT entrada, alvo, stop, resultado, valor
+    FROM trades
+    WHERE DATE(hora)=?
+    """, (hoje,))
+    dados = c.fetchall()
+
+    c.execute("SELECT resultado FROM trades")
+    hist = c.fetchall()
+
+    conn.close()
+
+    total = len(dados)
+    win = sum(1 for d in dados if d[3] == "WIN")
+    loss = sum(1 for d in dados if d[3] == "LOSS")
+    aberto = sum(1 for d in dados if d[3] is None)
+
+    lucro = 0
+    for e, a, s, r, v in dados:
+        if r == "WIN":
+            lucro += ((a - e) / e) * v
+        elif r == "LOSS":
+            lucro -= ((e - s) / e) * v
+
+    total_hist = len(hist)
+    win_hist = sum(1 for h in hist if h[0] == "WIN")
+
+    print("\n===== GESTOR STATUS =====")
+    print("Hoje:")
+    print("Trades:", total)
+    print("WIN:", win)
+    print("LOSS:", loss)
+    print("Abertos:", aberto)
+
+    if total > 0:
+        print("Winrate:", round(win/total*100, 2), "%")
+
+    print("Lucro dia:", round(lucro, 2))
+
+    print("\nHistórico:")
+    print("Total:", total_hist)
+    if total_hist > 0:
+        print("Winrate geral:", round(win_hist/total_hist*100, 2), "%")
+
     conn = conectar()
     c = conn.cursor()
 
@@ -250,6 +300,7 @@ def main():
                 print(f"Resultado parcial → WIN: {w} | LOSS: {l}")
 
             relatorio()
+            gestor_status()
 
             print("\n⏳ Aguardando...\n")
             time.sleep(INTERVALO)
