@@ -198,7 +198,29 @@ def analisar():
 # RELATÓRIO
 # ========================
 def relatorio():
-    def gestor_status():
+    conn = conectar()
+    c = conn.cursor()
+
+    hoje = datetime.now().strftime("%Y-%m-%d")
+    c.execute("SELECT resultado FROM trades WHERE DATE(hora)=?", (hoje,))
+    dados = c.fetchall()
+
+    total = len(dados)
+    win = sum(1 for d in dados if d[0] == "WIN")
+    loss = sum(1 for d in dados if d[0] == "LOSS")
+    aberto = sum(1 for d in dados if d[0] is None)
+
+    print("\n===== RELATÓRIO =====")
+    print("Total:", total)
+    print("WIN:", win)
+    print("LOSS:", loss)
+    print("Abertos:", aberto)
+
+    if total > 0:
+        print("Winrate:", round(win / total * 100, 2), "%")
+
+    conn.close()
+def gestor_status():
     conn = conectar()
     c = conn.cursor()
 
@@ -248,28 +270,6 @@ def relatorio():
     if total_hist > 0:
         print("Winrate geral:", round(win_hist/total_hist*100, 2), "%")
 
-    conn = conectar()
-    c = conn.cursor()
-
-    hoje = datetime.now().strftime("%Y-%m-%d")
-    c.execute("SELECT resultado FROM trades WHERE DATE(hora)=?", (hoje,))
-    dados = c.fetchall()
-
-    total = len(dados)
-    win = sum(1 for d in dados if d[0] == "WIN")
-    loss = sum(1 for d in dados if d[0] == "LOSS")
-    aberto = sum(1 for d in dados if d[0] is None)
-
-    print("\n===== RELATÓRIO =====")
-    print("Total:", total)
-    print("WIN:", win)
-    print("LOSS:", loss)
-    print("Abertos:", aberto)
-
-    if total > 0:
-        print("Winrate:", round(win / total * 100, 2), "%")
-
-    conn.close()
 
 
 # ========================
