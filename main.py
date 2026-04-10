@@ -220,6 +220,7 @@ def relatorio():
         print("Winrate:", round(win / total * 100, 2), "%")
 
     conn.close()
+    
 def gestor_status():
     conn = conectar()
     c = conn.cursor()
